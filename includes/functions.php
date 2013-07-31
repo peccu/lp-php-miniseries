@@ -4,7 +4,7 @@
  * The number of the image or html file to use for the sample.
  * Starts at 1.
  */
-$PART_FOR_SAMPLE = 1;
+$EDITION_FOR_SAMPLE = 1;
 
 
 /**
@@ -40,21 +40,21 @@ function lp_page_footer() {
 /**
  * Generates the HTML for the whole page, for both /edition/ and /sample/.
  *
- * It will display either the image, or include the HTML file in /parts/.
+ * It will display either the image, or include the HTML file in /editions/.
  *
- * If there is no more content to display for this delivery in the /parts/ directory, 
- * we return a status of 410 to show that this partwork is finished - the subscriber 
- * will be unsubscribed from this publication.
+ * If there is no more content to display for this delivery in the /editions/
+ * directory, we return a status of 410 to show that this partwork is finished -
+ * the subscriber will be unsubscribed from this publication.
  *
  * If called from /edition/ then we expect to receive two parameters in the 
  * URL:
  *
  * `delivery_count` 
- * This counts up from 0, and indicates which part should be published. BERG 
+ * This counts up from 0, and indicates which edition should be published. BERG 
  * Cloud increments this every time we return content. So if we don't deliver 
  * an edition on a particular day, deliver_count will be the same the next day.
  * This value determines which image or * HTML file we display.
- * eg, if delivery_count is 0, we display /parts/1.png or /parts/1.html
+ * eg, if delivery_count is 0, we display /editions/1.png or /editions/1.html
  *
  * `local_delivery_time`
  * This will contain the time in the timezone where the Little Printer we're
@@ -62,7 +62,7 @@ function lp_page_footer() {
  * We use this to determine if it's the correct day for a delivery.
  */
 function lp_display_page() {
-	global $PART_FOR_SAMPLE;
+	global $EDITION_FOR_SAMPLE;
 
 	// Should be either 'edition' or 'sample'.
 	$directory_name = basename(getcwd());
@@ -78,39 +78,35 @@ function lp_display_page() {
 	// Work out whether this is a regular edition, or the sample, and what 
 	// edition to show.
 	if ($directory_name == 'edition') {
-		$part_number = (int) $_GET['delivery_count'] + 1;
-		header('ETag: "' . md5($part_number . gmdate('dmY')) . '"');
+		$edition_number = (int) $_GET['delivery_count'] + 1;
+		header('ETag: "' . md5($edition_number . gmdate('dmY')) . '"');
 
 	} else { // 'sample'
-		$part_number = $PART_FOR_SAMPLE;
+		$edition_number = $EDITION_FOR_SAMPLE;
 		header('ETag: "' . md5('sample' . gmdate('dmY')) . '"');
 	}
 
-	// If we have an image/file available for this part, get its path.
-	$file_path_data = lp_get_part_file_path($part_number);
+	// If we have an image/file available for this edition, get its path.
+	$file_path_data = lp_get_edition_file_path($edition_number);
 
 	if ($file_path_data === FALSE) {
-		// No part is available for this part_number. End the subscription.
-		status_code_header(410, 'Gone');
+		// No edition is available for this edition_number. End the subscription.
+		lp_status_code_header(410, 'Gone');
 	
 	} else {
 		// We have content to display!
 
 		lp_page_header();
 
+		require lp_directory_path().'includes/header.php';	
+
 		if ($file_path_data[0] == 'image') {
 			echo '<img src="' . $file_path_data[1] . '" />';
 		} else { // 'file'
-			if (file_exists(lp_directory_path().'header.php')) {
-				require lp_directory_path().'header.php';	
-			}
-
 			require $file_path_data[1];
-
-			if (file_exists(lp_directory_path().'footer.php')) {
-				require lp_directory_path().'footer.php';	
-			}
 		}
+
+		require lp_directory_path().'includes/footer.php';	
 
 		lp_page_footer();
 	}
@@ -136,22 +132,22 @@ function lp_status_code_header($status_code, $status_string) {
 
 
 /**
- * Generate the path to the part file we want to display.
+ * Generate the path to the edition file we want to display.
  *
- * @param int $part_number The 1-based number of the part we're displaying.
- * @returns mixed FALSE if there's no file for this $part_number, or an array.
+ * @param int $edition_number The 1-based number of the edition we're displaying.
+ * @returns mixed FALSE if there's no file for this $edition_number, or an array.
  *		The array will have a first element of either 'image' or 'file', and a
  *		second element of either the image's URL, or the path to the file.
  */
-function lp_get_part_file_path($part_number) {
+function lp_get_edition_file_path($edition_number) {
 
-	if (file_exists(lp_directory_path()."parts/$part_number.png")) {
+	if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
 		return array(
 			'image',
-			"http://".$_SERVER['SERVER_NAME'].lp_directory_url()."parts/$part_number.png");
+			"http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$edition_number.png");
 
-	} else if (file_exists(lp_directory_path()."parts/$part_number.html")) {
-		return array('file', "parts/$part_number.html");
+	} else if (file_exists(lp_directory_path()."editions/$edition_number.html")) {
+		return array('file', lp_directory_path()."editions/$edition_number.html");
 
 	} else {
 		return FALSE;
