@@ -15,22 +15,13 @@ function page_header() {
 <meta charset="utf-8">
 <html>
 <head>
-  <title>Little Printer Publication</title>
+	<title>Little Printer Publication</title>
 
-  <style type="text/css">
-    body {
-      background: #fff;
-      color: #000;
-      width: 384px;
-      padding: 0;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-    }
-  </style>
+	<link rel="stylesheet" type="text/css" href="../style.css" />
 
 </head>
 <body>
+	<div id="lp-container">
 <?php
 }
 
@@ -40,6 +31,7 @@ function page_header() {
  */
 function page_footer() {
 	?>
+	</div> <!-- #lp-container -->
 </body>
 </html><?php
 }
@@ -91,7 +83,15 @@ function display_page() {
 		if ($file_path_data[0] == 'image') {
 			echo '<img src="' . $file_path_data[1] . '" />';
 		} else { // 'file'
+			if (file_exists(directory_path().'header.php')) {
+				require directory_path().'header.php';	
+			}
+
 			require $file_path_data[1];
+
+			if (file_exists(directory_path().'footer.php')) {
+				require directory_path().'footer.php';	
+			}
 		}
 
 		page_footer();
@@ -127,23 +127,33 @@ function status_code_header($status_code, $status_string) {
  */
 function get_part_file_path($part_number) {
 
-	// eg '/lp-php-partwork/edition/../'
-	$directory_path = dirname($_SERVER['PHP_SELF']) . "/../";
-	// eg '/users/home/phil/web/public/lp-php-partwork/edition/../'
-	$publication_path = $_SERVER['DOCUMENT_ROOT'] . $directory_path;
-	// eg 'parts/1'
-	$file_path = "parts/$part_number";
+	if (file_exists(directory_path()."parts/$part_number.png")) {
+		return array(
+			'image',
+			"http://".$_SERVER['SERVER_NAME'].directory_url()."parts/$part_number.png");
 
-	if (file_exists($publication_path.$file_path.'.png')) {
-		return array('image',
-					"http://".$_SERVER['SERVER_NAME'].$directory_path.$file_path);
-
-	} else if (file_exists($publication_path.$file_path.'.html')) {
-		return array('file', $file_path.'.html');
+	} else if (file_exists(directory_path()."parts/$part_number.html")) {
+		return array('file', "parts/$part_number.html");
 
 	} else {
 		return FALSE;
 	}
+}
+
+/**
+ * Gets the URL path (without domain) to this directory.
+ * @return string eg, '/lp-php-partwork/edition/../'
+ */
+function directory_url() {
+	return dirname($_SERVER['PHP_SELF']) . "/../";
+}
+
+/**
+ * Gets the full filesystem path to this directory.
+ * @return string eg, '/users/home/phil/web/public/lp-php-partwork/edition/../'
+ */
+function directory_path() {
+	return $_SERVER['DOCUMENT_ROOT'] . directory_url();
 }
 
 
