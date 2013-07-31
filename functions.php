@@ -46,10 +46,20 @@ function lp_page_footer() {
  * we return a status of 410 to show that this partwork is finished - the subscriber 
  * will be unsubscribed from this publication.
  *
- * If called from /edition/ then we expect to receive a `delivery_count` 
- * parameter in the URL, which counts up from 0. This determines which image or 
- * HTML file we display. eg, if delivery_count is 0, we display /parts/1.png or
- * /parts/1.html
+ * If called from /edition/ then we expect to receive two parameters in the 
+ * URL:
+ *
+ * `delivery_count` 
+ * This counts up from 0, and indicates which part should be published. BERG 
+ * Cloud increments this every time we return content. So if we don't deliver 
+ * an edition on a particular day, deliver_count will be the same the next day.
+ * This value determines which image or * HTML file we display.
+ * eg, if delivery_count is 0, we display /parts/1.png or /parts/1.html
+ *
+ * `local_delivery_time`
+ * This will contain the time in the timezone where the Little Printer we're
+ * delivering to is based, eg "2013-07-31T19:20:30.45+01:00".
+ * We use this to determine if it's the correct day for a delivery.
  */
 function lp_display_page() {
 	global $PART_FOR_SAMPLE;
@@ -57,17 +67,23 @@ function lp_display_page() {
 	// Should be either 'edition' or 'sample'.
 	$directory_name = basename(getcwd());
 
+	// Some checking of parameters first...
 	if ( ! in_array($directory_name, array('edition', 'sample'))) {
-		show_publication_error("This can only be run from either the 'edition' or 'sample' directories, but this is in '$directory_name'.");
+		lp_fatal_error("This can only be run from either the 'edition' or 'sample' directories, but this is in '$directory_name'.");
+	}
+	if ($directory_name == 'edition' && ! array_key_exists('delivery_count', $_GET)) {
+		lp_fatal_error("Requests for /edition/ need a delivery_count, eg '?delivery_count=0'");
 	}
 
+	// Work out whether this is a regular edition, or the sample, and what 
+	// edition to show.
 	if ($directory_name == 'edition') {
 		$part_number = (int) $_GET['delivery_count'] + 1;
 		header('ETag: "' . md5($part_number . gmdate('dmY')) . '"');
 
 	} else { // 'sample'
 		$part_number = $PART_FOR_SAMPLE;
-		//header('ETag: "' . md5('sample' . gmdate('dmY')) . '"');
+		header('ETag: "' . md5('sample' . gmdate('dmY')) . '"');
 	}
 
 	// If we have an image/file available for this part, get its path.
@@ -164,11 +180,11 @@ function lp_directory_path() {
  *
  * @param string $message The error message to display.
  */
-function lp_show_publication_error($message) {
+function lp_fatal_error($message) {
 	?>
-	<p class="error"><?php echo $message; ?></p>
+	<p><strong>ERROR: <?php echo $message; ?></strong></p>
 <?php
-	page_footer();
+	lp_page_footer();
 	exit;
 }
 
