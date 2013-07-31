@@ -4,13 +4,13 @@
  * The number of the image or html file to use for the sample.
  * Starts at 1.
  */
-define('PART_FOR_SAMPLE', 1);
+$PART_FOR_SAMPLE = 1;
 
 
 /**
  * Output at the top of both /edition/index.php and /sample/index.php
  */
-function page_header() {
+function lp_page_header() {
 	?><!DOCTYPE html>
 <meta charset="utf-8">
 <html>
@@ -29,7 +29,7 @@ function page_header() {
 /**
  * Output at the bottom of both /edition/index.php and /sample/index.php
  */
-function page_footer() {
+function lp_page_footer() {
 	?>
 	</div> <!-- #lp-container -->
 </body>
@@ -51,7 +51,9 @@ function page_footer() {
  * HTML file we display. eg, if delivery_count is 0, we display /parts/1.png or
  * /parts/1.html
  */
-function display_page() {
+function lp_display_page() {
+	global $PART_FOR_SAMPLE;
+
 	// Should be either 'edition' or 'sample'.
 	$directory_name = basename(getcwd());
 
@@ -64,12 +66,12 @@ function display_page() {
 		header('ETag: "' . md5($part_number . gmdate('dmY')) . '"');
 
 	} else { // 'sample'
-		$part_number = PART_FOR_SAMPLE;
-		header('ETag: "' . md5('sample' . gmdate('dmY')) . '"');
+		$part_number = $PART_FOR_SAMPLE;
+		//header('ETag: "' . md5('sample' . gmdate('dmY')) . '"');
 	}
 
 	// If we have an image/file available for this part, get its path.
-	$file_path_data = get_part_file_path($part_number);
+	$file_path_data = lp_get_part_file_path($part_number);
 
 	if ($file_path_data === FALSE) {
 		// No part is available for this part_number. End the subscription.
@@ -78,23 +80,23 @@ function display_page() {
 	} else {
 		// We have content to display!
 
-		page_header();
+		lp_page_header();
 
 		if ($file_path_data[0] == 'image') {
 			echo '<img src="' . $file_path_data[1] . '" />';
 		} else { // 'file'
-			if (file_exists(directory_path().'header.php')) {
-				require directory_path().'header.php';	
+			if (file_exists(lp_directory_path().'header.php')) {
+				require lp_directory_path().'header.php';	
 			}
 
 			require $file_path_data[1];
 
-			if (file_exists(directory_path().'footer.php')) {
-				require directory_path().'footer.php';	
+			if (file_exists(lp_directory_path().'footer.php')) {
+				require lp_directory_path().'footer.php';	
 			}
 		}
 
-		page_footer();
+		lp_page_footer();
 	}
 }
 
@@ -107,7 +109,7 @@ function display_page() {
  * @param int $status_code The HTTP status code, eg 404.
  * @param string $status_string The message, eg "Not Found".
  */
-function status_code_header($status_code, $status_string) {
+function lp_status_code_header($status_code, $status_string) {
 	$sapi_type = php_sapi_name();
 	if (substr($sapi_type, 0, 3) == 'cgi') {
 		header("Status: $status_code $status_string");
@@ -125,14 +127,14 @@ function status_code_header($status_code, $status_string) {
  *		The array will have a first element of either 'image' or 'file', and a
  *		second element of either the image's URL, or the path to the file.
  */
-function get_part_file_path($part_number) {
+function lp_get_part_file_path($part_number) {
 
-	if (file_exists(directory_path()."parts/$part_number.png")) {
+	if (file_exists(lp_directory_path()."parts/$part_number.png")) {
 		return array(
 			'image',
-			"http://".$_SERVER['SERVER_NAME'].directory_url()."parts/$part_number.png");
+			"http://".$_SERVER['SERVER_NAME'].lp_directory_url()."parts/$part_number.png");
 
-	} else if (file_exists(directory_path()."parts/$part_number.html")) {
+	} else if (file_exists(lp_directory_path()."parts/$part_number.html")) {
 		return array('file', "parts/$part_number.html");
 
 	} else {
@@ -144,7 +146,7 @@ function get_part_file_path($part_number) {
  * Gets the URL path (without domain) to this directory.
  * @return string eg, '/lp-php-partwork/edition/../'
  */
-function directory_url() {
+function lp_directory_url() {
 	return dirname($_SERVER['PHP_SELF']) . "/../";
 }
 
@@ -152,8 +154,8 @@ function directory_url() {
  * Gets the full filesystem path to this directory.
  * @return string eg, '/users/home/phil/web/public/lp-php-partwork/edition/../'
  */
-function directory_path() {
-	return $_SERVER['DOCUMENT_ROOT'] . directory_url();
+function lp_directory_path() {
+	return $_SERVER['DOCUMENT_ROOT'] . lp_directory_url();
 }
 
 
@@ -162,7 +164,7 @@ function directory_path() {
  *
  * @param string $message The error message to display.
  */
-function show_publication_error($message) {
+function lp_show_publication_error($message) {
 	?>
 	<p class="error"><?php echo $message; ?></p>
 <?php

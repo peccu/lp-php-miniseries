@@ -1,6 +1,6 @@
 <?php
 require('../functions.php');
 
-display_page();
+lp_display_page();
 
 ?>
