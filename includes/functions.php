@@ -66,6 +66,14 @@ function lp_display_page() {
 	// We ignore timezones, but have to set a timezone or PHP will complain.
 	date_default_timezone_set('UTC');
 
+	// We should always receive local_delivery_time but in case we don't,
+	// we'll set one. This also makes testing each edition's URL easier.
+	if (array_key_exists('local_delivery_time', $_GET)) {
+		$local_delivery_time = $_GET['local_delivery_time'];
+	} else {
+		$local_delivery_time = gmdate('Y-m-d\TH:i:s.0+00:00');
+	}
+
 	// Will be either 'edition' or 'sample'.
 	$directory_name = basename(getcwd());
 
@@ -76,7 +84,7 @@ function lp_display_page() {
 		lp_etag_header($edition_number, $local_delivery_time);
 
 		// Which weekday is this Little Printer on?
-		$weekday = lp_day_of_week($_GET['local_delivery_time']);
+		$weekday = lp_day_of_week($local_delivery_time);
 
 		if ( ! in_array($weekday, $DELIVERY_DAYS)) {
 			// This is a day that there's no delivery.
@@ -135,12 +143,6 @@ function lp_check_parameters() {
 			lp_fatal_error(
 				"Requests for /edition/ need a delivery_count, eg '?delivery_count=0'",
 				"Make sure 'send_delivery_count' is set to true in meta.json"	
-			);
-		}
-		if ( ! array_key_exists('local_delivery_time', $_GET)) {
-			lp_fatal_error(
-				"Requests for /edition/ need a local_delivery_time, eg '?delivery_count=\"2013-07-31T19:20:30.45+01:00\"'",
-				"Make sure 'send_timezone_info' is set to true in meta.json"	
 			);
 		}
 	}
