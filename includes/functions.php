@@ -1,10 +1,6 @@
 <?php
 
-/**
- * The number of the image or html file to use for the sample.
- * Starts at 1.
- */
-$EDITION_FOR_SAMPLE = 1;
+require 'config.php';
 
 
 /**
@@ -62,36 +58,44 @@ function lp_page_footer() {
  * We use this to determine if it's the correct day for a delivery.
  */
 function lp_display_page() {
-	global $EDITION_FOR_SAMPLE;
+	global $DELIVERY_DAYS, $EDITION_FOR_SAMPLE;
 
-	// Should be either 'edition' or 'sample'.
+	// Check everything's OK.
+	lp_check_parameters();
+
+	// We ignore timezones, but have to set a timezone or PHP will complain.
+	date_default_timezone_set('UTC');
+
+	// Will be either 'edition' or 'sample'.
 	$directory_name = basename(getcwd());
 
-	// Some checking of parameters first...
-	if ( ! in_array($directory_name, array('edition', 'sample'))) {
-		lp_fatal_error("This can only be run from either the 'edition' or 'sample' directories, but this is in '$directory_name'.");
-	}
-	if ($directory_name == 'edition' && ! array_key_exists('delivery_count', $_GET)) {
-		lp_fatal_error("Requests for /edition/ need a delivery_count, eg '?delivery_count=0'");
-	}
-
 	// Work out whether this is a regular edition, or the sample, and what 
-	// edition to show.
+	// edition to show (if any).
 	if ($directory_name == 'edition') {
 		$edition_number = (int) $_GET['delivery_count'] + 1;
-		header('ETag: "' . md5($edition_number . gmdate('dmY')) . '"');
+		lp_etag_header($edition_number, $local_delivery_time);
+
+		// Which weekday is this Little Printer on?
+		$weekday = lp_day_of_week($_GET['local_delivery_time']);
+
+		if ( ! in_array($weekday, $DELIVERY_DAYS)) {
+			// This is a day that there's no delivery.
+			http_response_code(204);
+			exit;
+		}
 
 	} else { // 'sample'
 		$edition_number = $EDITION_FOR_SAMPLE;
-		header('ETag: "' . md5('sample' . gmdate('dmY')) . '"');
+		lp_etag_header('sample', $local_delivery_time);
 	}
 
-	// If we have an image/file available for this edition, get its path.
+	// Get the path of the image or file for this edition (if any).
 	$file_path_data = lp_get_edition_file_path($edition_number);
 
 	if ($file_path_data === FALSE) {
 		// No edition is available for this edition_number. End the subscription.
-		lp_status_code_header(410, 'Gone');
+		http_response_code(410);
+		exit;
 	
 	} else {
 		// We have content to display!
@@ -114,20 +118,83 @@ function lp_display_page() {
 
 
 /**
- * Output an HTTP status code.
- * Because `http_response_code()` is only for PHP >= 5.4.
- * From http://stackoverflow.com/a/12018482/250962
- *
- * @param int $status_code The HTTP status code, eg 404.
- * @param string $status_string The message, eg "Not Found".
+ * Some basic checking to make sure everything's roughly OK before going 
+ * any further.
+ * Script execution will end here with an error if anything's not OK.
  */
-function lp_status_code_header($status_code, $status_string) {
-	$sapi_type = php_sapi_name();
-	if (substr($sapi_type, 0, 3) == 'cgi') {
-		header("Status: $status_code $status_string");
-	} else {
-		header("HTTP/1.1 $status_code $status_string");
+function lp_check_parameters() {
+	// 'edition' or 'sample'.
+	$directory_name = basename(getcwd());
+
+	// Some checking of parameters first...
+	if ( ! in_array($directory_name, array('edition', 'sample'))) {
+		lp_fatal_error("This can only be run from either the 'edition' or 'sample' directories, but this is in '$directory_name'.");
 	}
+	if ($directory_name == 'edition') {
+		if ( ! array_key_exists('delivery_count', $_GET)) {
+			lp_fatal_error(
+				"Requests for /edition/ need a delivery_count, eg '?delivery_count=0'",
+				"Make sure 'send_delivery_count' is set to true in meta.json"	
+			);
+		}
+		if ( ! array_key_exists('local_delivery_time', $_GET)) {
+			lp_fatal_error(
+				"Requests for /edition/ need a local_delivery_time, eg '?delivery_count=\"2013-07-31T19:20:30.45+01:00\"'",
+				"Make sure 'send_timezone_info' is set to true in meta.json"	
+			);
+		}
+	}
+}
+
+
+/**
+ * Gets rid of the timezone part of a date string.
+ * @param string $time eg, "2013-07-31T19:20:30.45+01:00".
+ * @return string eg "2013-07-31T19:20:30.45".
+ */
+function lp_local_time($time) {
+	return substr($time, 0, -6);
+}
+
+
+/**
+ * Get the day of the week from a time_string.
+ * @param string $time_string eg, "2013-07-31T19:20:30.45+01:00".
+ * @return string Lowercased weekday name. eg 'monday'.
+ */
+function lp_day_of_week($time_string) {
+	// We don't care about the timezone, so get rid of it.
+	$time_string = lp_local_time($time_string);
+
+	return strtolower(date('l', strtotime($time_string)));
+}
+
+
+/**
+ * Send an ETag header, based on a string and a time.
+ * @param mixed $id Probably either an edition number (eg, 1) or 'sample'.
+ * @param string $time eg, "2013-07-31T19:20:30.45+01:00".
+ */
+function lp_etag_header($id, $time) {
+	header('ETag: "' . md5($id, date('dmY', lp_local_time($time))) . '"');
+}
+
+
+/**
+ * Gets the URL path (without domain) to this directory.
+ * @return string eg, '/lp-php-partwork/edition/../'
+ */
+function lp_directory_url() {
+	return dirname($_SERVER['PHP_SELF']) . "/../";
+}
+
+
+/**
+ * Gets the full filesystem path to this directory.
+ * @return string eg, '/users/home/phil/web/public/lp-php-partwork/edition/../'
+ */
+function lp_directory_path() {
+	return $_SERVER['DOCUMENT_ROOT'] . lp_directory_url();
 }
 
 
@@ -140,7 +207,6 @@ function lp_status_code_header($status_code, $status_string) {
  *		second element of either the image's URL, or the path to the file.
  */
 function lp_get_edition_file_path($edition_number) {
-
 	if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
 		return array(
 			'image',
@@ -154,36 +220,42 @@ function lp_get_edition_file_path($edition_number) {
 	}
 }
 
-/**
- * Gets the URL path (without domain) to this directory.
- * @return string eg, '/lp-php-partwork/edition/../'
- */
-function lp_directory_url() {
-	return dirname($_SERVER['PHP_SELF']) . "/../";
-}
-
-/**
- * Gets the full filesystem path to this directory.
- * @return string eg, '/users/home/phil/web/public/lp-php-partwork/edition/../'
- */
-function lp_directory_path() {
-	return $_SERVER['DOCUMENT_ROOT'] . lp_directory_url();
-}
-
 
 /**
  * Displays an error message, ends the HTML, and finishes script execution.
  *
  * @param string $message The error message to display.
+ * @param string $explanation An optional extra bit of helpful text.
  */
-function lp_fatal_error($message) {
+function lp_fatal_error($message, $explanation=FALSE) {
 	?>
 	<p><strong>ERROR: <?php echo $message; ?></strong></p>
 <?php
+	if ($explanation !== FALSE) {
+		?>
+		<p><?php echo $explanation; ?></p>
+<?php
+	}
 	lp_page_footer();
 	exit;
 }
 
 
+/**
+ * For 4.3.0 <= PHP <= 5.4.0
+ * PHP >= 5.4 already has a http_response_code() function.
+ */
+if ( ! function_exists('http_response_code')) {
+	function http_response_code($newcode = NULL) {
+		static $code = 200;
+		if ($newcode !== NULL) {
+			header('X-PHP-Response-Code: '.$newcode, true, $newcode);
+			if ( ! headers_sent()) {
+				$code = $newcode;
+			}
+		}
+		return $code;
+	}
+}
 
 ?>
