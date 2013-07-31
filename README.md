@@ -102,12 +102,12 @@ You can either edit this or create a new one from scratch (but keep it the same 
 Then view your publication in BERG Cloud Remote and click the "Edit" link. Next to the plain example icon is a button that will let you "Reload from your server". Click this... you might have to refresh the page again, but your new icon should appear.
 
 
-## Update sample
+### Update sample
 
 You also need to create a sample, to show people what they're subscribing to. On the same "Edit" page, click the "Create Sample" button. You may have to wait a few minutes, but the first of your edition images, `1.png` should soon appear. (You can change which image is used as a sample; see below.)
 
 
-## Go live!
+### Go live!
 
 Once you've got all of your edition images in place, and you're ready for people to subscribe, go to your publication's BERG Cloud Remote "Edit" page, set the status to "live" and click the "Update status" button. That's it!
 
