@@ -1,12 +1,6 @@
 <?php
 
 /**
- * The value of CONTENT_FORMAT can be either 'images' or 'html'.
- */
-define('CONTENT_FORMAT', 'images');
-
-
-/**
  * The number of the image or html file to use for the sample.
  * Starts at 1.
  */
@@ -54,8 +48,7 @@ function page_footer() {
 /**
  * Generates the HTML for the whole page, for both /edition/ and /sample/.
  *
- * It will either display the correct image, or include the correct piece of
- * HTML, depending on the setting of CONTENT_FORMAT.
+ * It will display either the image, or include the HTML file in /parts/.
  *
  * If there is no more content to display for this delivery in the /parts/ directory, 
  * we return a status of 410 to show that this partwork is finished - the subscriber 
@@ -67,17 +60,12 @@ function page_footer() {
  * /parts/1.html
  */
 function display_page() {
-	if ( ! in_array(CONTENT_FORMAT, array('images', 'html'))) {
-		show_publication_error("CONTENT_FORMAT should be set to either 'images' or 'html' but it is'" . CONTENT_FORMAT . "'");
-	}
-
 	// Should be either 'edition' or 'sample'.
 	$directory_name = basename(getcwd());
 
 	if ( ! in_array($directory_name, array('edition', 'sample'))) {
 		show_publication_error("This can only be run from either the 'edition' or 'sample' directories, but this is in '$directory_name'.");
 	}
-
 
 	if ($directory_name == 'edition') {
 		$part_number = (int) $_GET['delivery_count'] + 1;
@@ -89,9 +77,9 @@ function display_page() {
 	}
 
 	// If we have an image/file available for this part, get its path.
-	$file_path = get_part_file_path($part_number);
+	$file_path_data = get_part_file_path($part_number);
 
-	if ($file_path === FALSE) {
+	if ($file_path_data === FALSE) {
 		// No part is available for this part_number. End the subscription.
 		status_code_header(410, 'Gone');
 	
@@ -100,10 +88,10 @@ function display_page() {
 
 		page_header();
 
-		if (CONTENT_FORMAT == 'images') {
-			echo '<img src="' . $file_path . '" />';
-		} else {
-			require $file_path;
+		if ($file_path_data[0] == 'image') {
+			echo '<img src="' . $file_path_data[1] . '" />';
+		} else { // 'file'
+			require $file_path_data[1];
 		}
 
 		page_footer();
@@ -131,31 +119,28 @@ function status_code_header($status_code, $status_string) {
 
 /**
  * Generate the path to the part file we want to display.
- * If we're using images, then the returned path will be the URL of the image.
- * If we're using html files, the returned path will be the path for including.
  *
  * @param int $part_number The 1-based number of the part we're displaying.
- * @returns mixed The part URL or filepath (string) or FALSE (boolean).
+ * @returns mixed FALSE if there's no file for this $part_number, or an array.
+ *		The array will have a first element of either 'image' or 'file', and a
+ *		second element of either the image's URL, or the path to the file.
  */
 function get_part_file_path($part_number) {
-	$file_extension = 'png';
-	if (CONTENT_FORMAT == 'html') {
-		$file_extension = 'html';
-	}
 
 	// eg '/lp-php-partwork/edition/../'
 	$directory_path = dirname($_SERVER['PHP_SELF']) . "/../";
 	// eg '/users/home/phil/web/public/lp-php-partwork/edition/../'
 	$publication_path = $_SERVER['DOCUMENT_ROOT'] . $directory_path;
-	// eg 'parts/1.png'
-	$file_path = "parts/$part_number.$file_extension";
+	// eg 'parts/1'
+	$file_path = "parts/$part_number";
 
-	if (file_exists($publication_path . $file_path)) {
-		if (CONTENT_FORMAT == 'html') {
-			return $file_path;
-		} else {
-			return "http://".$_SERVER['SERVER_NAME']. $directory_path  . $file_path;
-		}
+	if (file_exists($publication_path.$file_path.'.png')) {
+		return array('image',
+					"http://".$_SERVER['SERVER_NAME'].$directory_path.$file_path);
+
+	} else if (file_exists($publication_path.$file_path.'.html')) {
+		return array('file', $file_path.'.html');
+
 	} else {
 		return FALSE;
 	}
