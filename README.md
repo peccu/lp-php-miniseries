@@ -136,12 +136,13 @@ Each file can contain whatever HTML you like, although it will all be rendered 3
 
 Whether you're using images or HTML files you might want to have a common header or footer on every edition. You could manually put these into each image or HTML file, but you can also do it in one place.
 
-Inside the `includes` folder there are four files:
+Inside the `includes` folder there are five files:
 
 	littleprinter-pub/includes/config.php
 	littleprinter-pub/includes/footer.php
 	littleprinter-pub/includes/functions.php
 	littleprinter-pub/includes/header.php
+	littleprinter-pub/includes/index.html
 
 The contents of two of these, `header.php` and `footer.php`, will be displayed at the top and bottom of every one of your editions. These should contain HTML and could link to any images you want to upload to your server.
 
@@ -203,6 +204,10 @@ You'll need to upload `config.php` to your server, but there's also one more ste
 This doesn't affect how the publication works, but is used to describe the publication to potential subscribers. You should change `"every day"` so that it makes sense for your new delivery days. Whatever you write will appear after the words "Delivered on". So in our above example we'd put this:
 
 	"delivered_on": "Mondays, Wednesdays and Fridays",
+
+Subscribers will then see:
+
+> Delivered on Mondays, Wednesdays and Fridays
 
 Once that's done, upload `meta.json` to your server. Then, on your publication's BERG Cloud Developers "Edit" page, click the "Reload from your server" button in the "Metadata" section.
 
