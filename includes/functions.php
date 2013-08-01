@@ -217,6 +217,10 @@ function lp_get_edition_file_path($edition_number) {
 	} else if (file_exists(lp_directory_path()."editions/$edition_number.html")) {
 		return array('file', lp_directory_path()."editions/$edition_number.html");
 
+	# We'll be nice and make it work for PHP files too:
+	} else if (file_exists(lp_directory_path()."editions/$edition_number.php")) {
+		return array('file', lp_directory_path()."editions/$edition_number.php");
+
 	} else {
 		return FALSE;
 	}
