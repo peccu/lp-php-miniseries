@@ -12,11 +12,14 @@ A Little Printer isn't required, although access to one is useful to check that 
 
 We'll first look at the basic configuration and setup, and then at how to create a publication that shows an image every day. Then we'll look at some further variations on this.
 
-## Setup
+
+###################################################################################
+## Setup ##########################################################################
 
 Download the site's code from https://github.com/bergcloud/lp-php-partwork . If you're comfortable with Git, you can clone it, otherwise, click the "Download ZIP" button. After unzipping the download you should have a folder called `lp-php-partwork-master`.
 
-### meta.json
+
+### meta.json #####################################################################
 
 You'll need to edit one file in this folder: `meta.json`. Open this in a text editor, eg TextEdit on a Mac or Notepad on Windows. For the moment you'll only need to change two lines:
 
@@ -25,7 +28,8 @@ You'll need to edit one file in this folder: `meta.json`. Open this in a text ed
 
 Replace those capitalised words with the title and description of your publication. You can change them again later. Be sure to keep the "quote" marks. Save the file.
 
-### Upload the files
+
+### Upload the files ##############################################################
 
 Now upload the folder to your webserver. You can rename the folder to something meaningful; subscribers to your publication will never see it. We'll call our folder `littleprinter-pub` and put it at the top of our imaginary website.
 
@@ -42,7 +46,8 @@ If everything's working you should see a black-and-white image that reads "Editi
 
 Note that the `delivery_count` value starts at 0 for the first edition.
 
-### Set up your BERG Cloud publication
+
+### Create your BERG Cloud publication ############################################
 
 Now sign in to [BERG Cloud Remote](http://remote.bergcloud.com/) -- create an account if you don't have one already.
 
@@ -63,7 +68,8 @@ If you don't, you've probably got a typo in the URL.
 Otherwise, we're ready to go, and you can start putting your content in. Note that your publication is currently in "developer test" mode, so no one else knows it exists.
 
 
-## A daily publication of images
+###################################################################################
+## A daily publication of images ##################################################
 
 As a first example, we'll make a publication that contains images. Every day the subscriber will receive a single image. You can see some examples of this already, such as [Stick & Spell](http://remote.bergcloud.com/publications/170) and [What Am I?](http://remote.bergcloud.com/publications/167).
 
@@ -92,7 +98,8 @@ Once a subscriber has seen all of the available editions for your publication th
 
 We're nearly done, with only two small things to go before we go live -- an icon and a sample.
 
-### Add a publication icon
+
+### Add a publication icon ########################################################
 
 If you view your publication on the BERG Cloud Developers site you'll see it has an Icon which is a black circle with a white centre. This is the `icon.png` file which is in your publication's folder.
 
@@ -102,18 +109,21 @@ You can either edit this or create a new one from scratch (but keep it the same 
 
 Then view your publication on the BERG Cloud Developers site and click the "Edit" link. Next to the plain example icon is a button that will let you "Reload from your server". Click this... you might have to refresh the page again, but your new icon should appear.
 
-### Update sample
+
+### Update sample #################################################################
 
 You also need to create a sample, to show people what they're subscribing to. On the same "Edit" page, click the "Create Sample" button. You may have to wait a few minutes, but the first of your edition images, `1.png` should soon appear. (You can change which image is used as a sample; see below.)
 
-### Go live!
+
+### Go live! ######################################################################
 
 Once you've got all of your edition images in place, and you're ready for people to subscribe, go to your publication's BERG Cloud Developers "Edit" page, set the status to "live" and click the "Update status" button. That's it!
 
 We'll now look at some variations on this basic publication.
 
 
-## Using HTML files
+###################################################################################
+## Using HTML files ###############################################################
 
 You might have an idea for a publication that's better displayed as text, rather than images. In that case you can use HTML files instead of PNG files. Put each of these in the `/editions/` folder, like this:
 
@@ -132,7 +142,8 @@ Each file can contain whatever HTML you like, although it will all be rendered 3
 	...
 
 
-## Adding headers and footers
+###################################################################################
+## Adding headers and footers #####################################################
 
 Whether you're using images or HTML files you might want to have a common header or footer on every edition. You could manually put these into each image or HTML file, but you can also do it in one place.
 
@@ -153,12 +164,14 @@ Visit some of your edition URLs to check if it's looking how you want:
 	...
 
 
-## Changing CSS styles
+###################################################################################
+## Changing CSS styles ############################################################
 
 If you're using HTML files and/or headers and footers then you may want to add to the very minimal default CSS styles. These are in `littleprinter-pub/style.css`. You can read more about fonts and sizes in the [Style Guide](http://remote.bergcloud.com/developers/style_guide/fonts).
 
 
-## Changing sample output
+###################################################################################
+## Changing sample output #########################################################
 
 By default the sample that potential subscribers see on BERG Cloud Remote is the first edition of your publication. If you'd rather use a different edition then open the `littleprinter-pub/includes/config.php` file in your text editor and change this line:
 
@@ -167,7 +180,8 @@ By default the sample that potential subscribers see on BERG Cloud Remote is the
 Replace the `1` with whatever edition number you want to use as your sample. Once you've uploaded `config.php` to your server, you'll need to go to the "Edit" page for your publication in BERG Cloud Developers site and click the "Regnerate" button next to your existing sample.
 
 
-## Changing delivery days
+###################################################################################
+## Changing delivery days #########################################################
 
 By default your publication will be delivered every day of the week. You might want it to only arrive on weedays, or only weekends, or only on Fridays, or...
 
