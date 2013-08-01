@@ -1,4 +1,5 @@
 <?php
+// v1.0.1
 
 require 'config.php';
 
@@ -13,7 +14,12 @@ function lp_page_header() {
 <head>
 	<title>Little Printer Publication</title>
 
-	<link rel="stylesheet" type="text/css" href="../style.css" />
+	<style type="text/css">
+<?php
+	// Include styles inline as it's more reliable when rendering publications.
+	require ('../style.css');
+	?>
+	</style>
 
 </head>
 <body>
