@@ -118,10 +118,10 @@ function lp_display_page() {
 
 		require lp_directory_path().'includes/header.php';	
 
-		if ($file_path_data[0] == 'image') {
-			echo '<img src="' . $file_path_data[1] . '" />';
+		if ($file_path_data['type'] == 'image') {
+			echo '<img src="' . $file_path_data['url'] . '" />';
 		} else { // 'file'
-			require $file_path_data[1];
+			require $file_path_data['file'];
 		}
 
 		require lp_directory_path().'includes/footer.php';	
@@ -221,15 +221,22 @@ function lp_directory_path() {
 function lp_get_edition_file_path($edition_number) {
 	if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
 		return array(
-			'image',
-			"http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$edition_number.png");
+			'type' => 'image',
+            'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$edition_number.png"
+        );
 
 	} else if (file_exists(lp_directory_path()."editions/$edition_number.html")) {
-		return array('file', lp_directory_path()."editions/$edition_number.html");
+        return array(
+            'type' => 'file',
+            'file' => lp_directory_path()."editions/$edition_number.html"
+        );
 
 	# We'll be nice and make it work for PHP files too:
 	} else if (file_exists(lp_directory_path()."editions/$edition_number.php")) {
-		return array('file', lp_directory_path()."editions/$edition_number.php");
+        return array(
+            'type' => 'file',
+            'file' => lp_directory_path()."editions/$edition_number.php"
+        );
 
 	} else {
 		return FALSE;
