@@ -1,5 +1,5 @@
 <?php
-// v1.0.1
+// v1.0.2
 
 require 'config.php';
 
