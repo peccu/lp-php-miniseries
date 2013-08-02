@@ -238,6 +238,13 @@ function lp_get_edition_file_path($edition_number) {
             'file' => lp_directory_path()."editions/$edition_number.php"
         );
 
+	# If there's a dynamic file to handle all days, use that
+	} else if (file_exists(lp_directory_path()."editions/all.php")) {
+        return array(
+            'type' => 'file',
+            'file' => lp_directory_path()."editions/all.php"
+        );
+
 	} else {
 		return FALSE;
 	}
