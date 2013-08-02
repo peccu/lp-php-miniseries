@@ -169,7 +169,7 @@ Inside the `includes` folder there are five files:
 	littleprinter-pub/includes/footer.php
 	littleprinter-pub/includes/functions.php
 	littleprinter-pub/includes/header.php
-	littleprinter-pub/includes/index.html
+	littleprinter-pub/includes/index.php
 
 The contents of two of these, `header.php` and `footer.php`, will be displayed at the top and bottom of every one of your editions. By default they have nothing in them except an invisible HTML comment. You can put any HTML you like in them, and this will appear on all of your editions, whether they're images, HTML or PHP.
 
