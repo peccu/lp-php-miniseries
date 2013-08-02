@@ -1,6 +1,6 @@
-# PHP Little Printer partwork example
+# PHP Little Printer miniseries example
 
-This is a PHP site to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) partwork publication: one that delivers your content to subscribers on a regular basis. For example, an image every day, or a short story twice a week.
+This is a PHP site to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week.
 
 In addition to this code you will need:
 
@@ -18,7 +18,7 @@ We'll first look at the basic configuration and setup, and then at how to create
 
 Before adding your own content to the publication we'll set it up using the dummy content provided.
 
-Download the publication's code from https://github.com/bergcloud/lp-php-partwork . If you're comfortable with Git, you can clone the files, otherwise, click the "Download ZIP" button. After unzipping the download you should have a folder called something like `lp-php-partwork-master`.
+Download the publication's code from https://github.com/bergcloud/lp-php-miniseries . If you're comfortable with Git, you can clone the files, otherwise, click the "Download ZIP" button. After unzipping the download you should have a folder called something like `lp-php-miniseries-master`.
 
 
 ### meta.json #####################################################################
@@ -125,7 +125,13 @@ You also need to create a sample, to show people what they're subscribing to. On
 
 ### Go live! ######################################################################
 
-Once you've got all of your edition images in place, and you're ready for people to subscribe, go to your publication's BERG Cloud Developers "Edit" page, set the status to "live" and click the "Update status" button. That's it, you're published!
+Once you've got all of your edition images in place, and you're ready for people to subscribe, go to your publication's BERG Cloud Developers "Edit" page.
+
+There is a series of things to check before changing your publication's status, but if you've got this far then most of them should already be fine. The `lp-php-miniseries` code takes care of the "ETags" for you (these help make requests from BERG Cloud to your publication more efficient). The `validate_config` and `configure` points are only relevant to publications that are more complex than a miniseries. To double-check everything is OK, then enter your "Endpoint" URL into the form on http://remote.bergcloud.com/developers/tools/validations 
+
+Once you're ready, on the "Edit" page, set the status of your publication to "live" and click the "Update status" button. 
+
+That's it, you're published!
 
 We'll now look at some variations on this basic publication.
 
