@@ -146,6 +146,10 @@ function lp_check_parameters() {
 	}
 	if ($directory_name == 'edition') {
 		if ( ! array_key_exists('delivery_count', $_GET)) {
+			// Sending an ETag shouldn't really be necessary at /edition/ with 
+			// no parameters, but the publication validator currently queries 
+			// that URL and expects an ETag.
+			lp_etag_header('delivery_count_error', gmdate('Y-m-d\TH:i:s.0+00:00'));
 			lp_fatal_error(
 				"Requests for /edition/ need a delivery_count, eg '?delivery_count=0'",
 				"Make sure 'send_delivery_count' is set to true in meta.json"	
