@@ -9,9 +9,9 @@ require 'config.php';
  */
 function lp_page_header() {
 	?><!DOCTYPE html>
-<meta charset="utf-8">
 <html>
 <head>
+	<meta charset="utf-8">
 	<title>Little Printer Publication</title>
 
 	<style type="text/css">
