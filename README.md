@@ -6,7 +6,7 @@ In addition to this code you will need:
 
 * A webserver that you can upload PHP files to (most shared hosting accounts will be fine).
 * An account on the [BERG Cloud Remote](http://remote.bergcloud.com/) website.
-* Some content for your publications: a series of small black-and-white images and/or some text in small daily chunks.
+* Some content for your publication: a series of small black-and-white images and/or some text in small daily chunks.
 
 A Little Printer isn't required, although access to one is useful to check that output looks how you want it.
 
@@ -127,7 +127,7 @@ You also need to create a sample, to show people what they're subscribing to. On
 
 Once you've got all of your edition images in place, and you're ready for people to subscribe, go to your publication's BERG Cloud Developers "Edit" page.
 
-There is a series of things to check before changing your publication's status, but if you've got this far then most of them should already be fine. The `lp-php-miniseries` code takes care of the "ETags" for you (these help make requests from BERG Cloud to your publication more efficient). The `validate_config` and `configure` points are only relevant to publications that are more complex than a miniseries. To double-check everything is OK, then enter your "Endpoint" URL into the form on http://remote.bergcloud.com/developers/tools/validations 
+There is a series of things to check before changing your publication's status, but if you've got this far then most of them should already be fine. The `lp-php-miniseries` code takes care of the "ETags" for you (these help make requests from BERG Cloud to your publication more efficient). The `validate_config` and `configure` points are only relevant to publications that are more complex than a miniseries. To double-check everything is OK, then enter your "Endpoint" URL into the [BERG Cloud Remote Validator](http://remote.bergcloud.com/developers/tools/validations).
 
 Once you're ready, on the "Edit" page, set the status of your publication to "live" and click the "Update status" button. 
 
