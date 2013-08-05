@@ -1,6 +1,8 @@
 # PHP Little Printer miniseries example
 
-This is a PHP site to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week.
+v1.1.0
+
+This is a PHP website to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week.
 
 In addition to this code you will need:
 
@@ -10,7 +12,7 @@ In addition to this code you will need:
 
 A Little Printer isn't required, although access to one is useful to check that output looks how you want it.
 
-We'll first look at the basic configuration and setup, and then at how to create a publication that shows an image every day. Then we'll look at variations on this basic publication.
+We'll first look at the basic configuration and setup, and then at how to create a publication that shows an image every day. Then we'll look at variations on this basic publication, such as only delivering on certain days or creating publications containing HTML text. Finally we'll look at how to take things even further if you're comfortable with writing some PHP.
 
 
 ###################################################################################
@@ -81,10 +83,10 @@ As a first example, we'll make a publication that contains images. Every day the
 
 Initially there are four example files in the `/editions/` folder:
 
-	littleprinter-pub/edition/1.png
-	littleprinter-pub/edition/2.png
-	littleprinter-pub/edition/3.html
-	littleprinter-pub/edition/4.png
+	littleprinter-pub/editions/1.png
+	littleprinter-pub/editions/2.png
+	littleprinter-pub/editions/3.html
+	littleprinter-pub/editions/4.png
 
 As this suggests, you create a single image for each daily edition of your publication. (There's also a `.html` file in there; we'll come on to those soon.)
 
@@ -141,18 +143,18 @@ We'll now look at some variations on this basic publication.
 
 You might have an idea for a publication that's better displayed as text, rather than images. In that case you can use HTML files instead of PNG files. You would put each of these files in the `/editions/` folder, like this:
 
-	littleprinter-pub/edition/1.html
-	littleprinter-pub/edition/2.html
-	littleprinter-pub/edition/3.html
-	littleprinter-pub/edition/4.html
+	littleprinter-pub/editions/1.html
+	littleprinter-pub/editions/2.html
+	littleprinter-pub/editions/3.html
+	littleprinter-pub/editions/4.html
 	...
 
 Each file can contain whatever HTML you like, although it will all be rendered 384 pixels wide and in black-and-white. It's possible to use PNG images on some days and HTML files on others, so your files might look like this:
 
-	littleprinter-pub/edition/1.html
-	littleprinter-pub/edition/2.png
-	littleprinter-pub/edition/3.png
-	littleprinter-pub/edition/4.html
+	littleprinter-pub/editions/1.html
+	littleprinter-pub/editions/2.png
+	littleprinter-pub/editions/3.png
+	littleprinter-pub/editions/4.html
 	...
 
 If you're handy with PHP, and have more complicated or dynamic content, you can use PHP files instead of (or as well as) HTML files. Just name them similarly: `1.php`, `2.php`, etc.
@@ -163,7 +165,7 @@ If you're handy with PHP, and have more complicated or dynamic content, you can 
 
 Whether you're using images or HTML files you might want to have a common header or footer appear on every edition. You could manually put these into each image or HTML file, but you can also do it in one place.
 
-Inside the `includes` folder there are five files:
+Inside the `/includes/` folder there are five files:
 
 	littleprinter-pub/includes/config.php
 	littleprinter-pub/includes/footer.php
@@ -242,4 +244,111 @@ Subscribers will then see:
 Once that's done, upload `config.php` and `meta.json` to your server. Then, on your publication's BERG Cloud Developers "Edit" page, click the "Reload from your server" button in the "Metadata" section.
 
 
+###################################################################################
+## Creating infinite publications #################################################
+
+We can already create a wide variety of publications without writing any code. But if you're comfortable with writing a little PHP, then it's possible to take things further.
+
+As a first step, we can make a publication that lasts indefinitely, but without having to create an infinite amount of images or files in the `/editions/` folder.
+
+If there is no file available for a particular edition number then the code checks for the presence of an `/editions/all.php` file. If this exists, that file is used for every other edition. For example, if we have these edition files
+
+	littleprinter-pub/editions/1.html
+	littleprinter-pub/editions/2.png
+	littleprinter-pub/editions/3.png
+	littleprinter-pub/editions/all.php
+
+then the first three editions will display the HTML and two PNG files as normal. All subsequent requests for editions will use the `all.php` file, and the publication will never end.
+
+In reality you probably wouldn't mix these methods, and your `/editions/` folder would look like this:
+
+	littleprinter-pub/editions/all.php
+
+Within `all.php` you can do whatever you like to output content for each edition. Anything in `/includes/header.php` or `/includes/footer.php` will, as usual, appear before and after your content. Requests are still filtered depending on your `$DELIVERY_DAYS`, so `all.php` will only be reached on days for which content should appear.
+
+You have access to two important variables:
+
+* `$edition_number` will be an integer, counting up from 1 for each edition.
+* `$local_delivery_time` will be a string representing the current time at the requesting Little Printer, for example `2013-07-31T19:20:30.45-07:00`.
+
+(Alternatively, you could access `$_GET['delivery_count']` (which is zero-based) and `$_GET['local_delivery_time']` directly if you prefer.)
+
+So, if your `/editions/all.php` file looked like this
+
+	<p>Welcome to edition #<?php echo $edition_number ?>!</p>
+
+	<?php
+	$parsed = date_parse($local_delivery_time);
+	$timestamp = mktime($parsed['hour'], 0, 0, $parsed['month'], $parsed['day'], $parsed['year'], (int)$parsed['is_dst']);
+	$weekday = date('l', $timestamp);
+	$tz_name = timezone_name_from_abbr('', (-1 * $parsed['zone'] * 60), false);
+	?>
+
+	<p>It is currently a <?php echo $weekday ?> and you're in the <?php echo $tz_name; ?> timezone.</p>
+
+then the edition's output might contain:
+
+> Welcome to edition #3!
+>
+> It is currently a Wednesday and you're in the America/Denver timezone. 
+
+It's not the most interesting publication, but improving this is left as an exercise for the reader.
+
+If you want your publication to end at some point, rather than to go on forever, then you will need to indicate to BERG Cloud when there are no more editions. When the value of `$edition_number` is higher than the number of editions you wish to publish, then use this PHP, rather than outputting any content:
+
+		http_response_code(410);
+		exit;
+
+Be careful not to ouptput any HTML, including blank lines, before doing this.Subscribers will then be automatically unsubscribed, having reached the end of your publication.
+
+
+###################################################################################
+## Further development ############################################################
+
+It is possible to use this code as a base on which to build a more complicated publication that involves customised content for different users. As a simple example, if you want users to enter their name when they subscribe, so you can display it in the publication, there are a few steps.
+
+First, edit your publication's `meta.json` and change the `config` entry to this:
+
+	"config": {
+		"fields": [
+			{
+				"type": "text",
+				"name": "firstname",
+				"label": "Your first name"
+			}
+		]	
+	}
+
+This means that when users subscribe to your publication on BERG Cloud they will be shown a form field asking for their first name. Read more about `meta.json` on [BERG Cloud Developers](http://remote.bergcloud.com/developers/reference/metajson).
+
+Second, we need to provide some validation for what the user enters. Validation requests come to a publication's `/validate_config/` URL, so we need to add a file at `/littleprinter-pub/validate_config/index.php` containing something like this:
+
+	<?php
+	$config = json_decode($_POST['config'], true);
+
+	$errors = array();
+
+	if ( ! isset($config['firstname']) || $config['firstname'] == '') {
+		$errors[] = "Please enter your first name.";
+	}
+
+	if (empty($errors)) {
+		$return = array('valid' => 'true');
+	} else {
+		$return = array('valid' => 'false', 'errors' => $errors);
+	}
+
+	header('Content-Type: application/json');
+	die(json_encode($return));	
+	?>
+
+You can read more about config validation on [BERG Cloud Developers](http://remote.bergcloud.com/developers/reference/validate_config). All we're doing here is checking the submitted `firstname` field has something in it, and returning an error message if not. This message is displayed to the user, along with the form.
+
+When BERG Cloud makes a request for an edition it will pass on this `firstname` field, along with the subscribed user's input, in the GET string. So in our `/editions/all.php` we could add this:
+
+	<?php
+	<p>This edition is for <?php htmlentities($_GET['firstname']); ?>!</p>
+	?>
+
+Again, more interesting uses are left to you, the reader. Good luck! 
 
