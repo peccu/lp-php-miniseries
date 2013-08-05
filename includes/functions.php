@@ -222,28 +222,28 @@ function lp_get_edition_file_path($edition_number) {
 	if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
 		return array(
 			'type' => 'image',
-            'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$edition_number.png"
-        );
+			'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$edition_number.png"
+		);
 
 	} else if (file_exists(lp_directory_path()."editions/$edition_number.html")) {
-        return array(
-            'type' => 'file',
-            'file' => lp_directory_path()."editions/$edition_number.html"
-        );
+		return array(
+			'type' => 'file',
+			'file' => lp_directory_path()."editions/$edition_number.html"
+		);
 
 	# We'll be nice and make it work for PHP files too:
 	} else if (file_exists(lp_directory_path()."editions/$edition_number.php")) {
-        return array(
-            'type' => 'file',
-            'file' => lp_directory_path()."editions/$edition_number.php"
-        );
+		return array(
+			'type' => 'file',
+			'file' => lp_directory_path()."editions/$edition_number.php"
+		);
 
 	# If there's a dynamic file to handle all days, use that
 	} else if (file_exists(lp_directory_path()."editions/all.php")) {
-        return array(
-            'type' => 'file',
-            'file' => lp_directory_path()."editions/all.php"
-        );
+		return array(
+			'type' => 'file',
+			'file' => lp_directory_path()."editions/all.php"
+		);
 
 	} else {
 		return FALSE;
