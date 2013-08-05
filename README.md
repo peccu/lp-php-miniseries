@@ -346,9 +346,7 @@ You can read more about config validation on [BERG Cloud Developers](http://remo
 
 When BERG Cloud makes a request for an edition it will pass on this `firstname` field, along with the subscribed user's input, in the GET string. So in our `/editions/all.php` we could add this:
 
-	<?php
 	<p>This edition is for <?php htmlentities($_GET['firstname']); ?>!</p>
-	?>
 
 Again, more interesting uses are left to you, the reader. Good luck! 
 
