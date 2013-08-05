@@ -214,9 +214,10 @@ function lp_directory_path() {
  * Generate the path to the edition file we want to display.
  *
  * @param int $edition_number The 1-based number of the edition we're displaying.
- * @returns mixed FALSE if there's no file for this $edition_number, or an array.
- *		The array will have a first element of either 'image' or 'file', and a
- *		second element of either the image's URL, or the path to the file.
+ * @returns mixed FALSE if there's no file for this $edition_number, or a hash.
+ *		The hash will have a `type` element of either `image' or 'file'.
+ *		`image` hashes will have a `url` element.
+ *		`file` hashes will have a `file` element.
  */
 function lp_get_edition_file_path($edition_number) {
 	if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
