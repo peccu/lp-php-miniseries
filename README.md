@@ -348,5 +348,23 @@ When BERG Cloud makes a request for an edition it will pass on this `firstname` 
 
 	<p>This edition is for <?php htmlentities($_GET['firstname']); ?>!</p>
 
-Again, more interesting uses are left to you, the reader. Good luck! 
+However, this kind of customisation requires a further step, and one that requires tweaking the existing code. When BERG Cloud requests an edition, an [ETag](http://en.wikipedia.org/wiki/HTTP_ETag) header is returned by the publication which is unique for that particular content. If BERG Cloud receives a duplicate ETag it knows the content won't have changed, and can avoid fetching it multiple times.
+
+With our regular miniseries we can return the same ETag for each edition, because an edition is always the same. (In fact, we've made the ETags change each day to avoid anything being cached for too long.) But when we start providing content that is unique to each user we need to change these generic ETags.
+
+In `/includes/functions.php` find the `lp_display_page()` function, and this part of the code:
+
+	if ($directory_name == 'edition') {
+		$edition_number = (int) $_GET['delivery_count'] + 1;
+		lp_etag_header($edition_number, $local_delivery_time);
+
+You can see that we generate an ETag header using the edition number and the delivery time. When generating user-specific content we need to change this. Using our above example we could change the code to:
+
+	if ($directory_name == 'edition') {
+		$edition_number = (int) $_GET['delivery_count'] + 1;
+		lp_etag_header($edition_number + $_GET['firstname'], $local_delivery_time);
+
+Only the third line has changed: We've changed the ETag header so that, as well as `$edition_number`, it uses the `firstname` which is our only unique field. If we had other user-supplied fields we'd use them to ensure that an ETag was always specific to a particular edition's content.
+
+As you can see, we're starting to reach the limits of this example code as it stands, and more complicated uses are likely to require further customisation. If you've understood things this far then maybe this is something you're ready for. Good luck!
 
