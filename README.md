@@ -1,6 +1,6 @@
 # PHP Little Printer miniseries example
 
-v1.1.1
+v1.1.2
 
 This is a PHP website to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week.
 
@@ -35,7 +35,7 @@ Replace those capitalised words with the title and description of your publicati
 
 ### Upload the files ##############################################################
 
-Now upload the folder to your webserver. You can rename the folder to something meaningful, but subscribers to your publication will never see it. We'll call our folder `littleprinter-pub` and put it at the top of our imaginary website. It will be at this URL:
+Now upload the folder to your webserver. You can rename the folder to something meaningful, but subscribers to your publication will never see it, so call it whatever makes sense to you. Throughout this example we'll call our folder `littleprinter-pub` and put it at the top of our imaginary website. It will be at this URL:
 
 	http://www.example.com/littleprinter-pub/
 
@@ -88,11 +88,21 @@ Initially there are four example files in the `/editions/` folder:
 	littleprinter-pub/editions/3.html
 	littleprinter-pub/editions/4.png
 
-As this suggests, you create a single image for each daily edition of your publication. (There's also a `.html` file in there; we'll come on to those soon.)
+As this suggests, you create a single image for each daily edition of your publication. Each file should be named with only a number, followed by the file extension, which in this case is `.png`. (There's also a `.html` file in there; we'll come on to those soon.) Be sure to use only a plain number for the file names. These are OK:
+
+	1.png
+	10.png
+	387968.png
+
+But these won't work:
+
+	01.png
+	10_funny.png
+	part-387968.png
 
 Each image should be 384 pixels wide, PNG format, and black-and-white (no greys). You can read more about these details in the [Style Guide](http://remote.bergcloud.com/developers/style_guide/).
 
-So, delete those four example files, and replace them with your numbered images. There's no need to stop at 4; use as many as you like, numbered sequentially. You can look at the URLs we tried earlier to see if everything's OK. For example, these URLs
+So, delete all four of those example files, and replace them with your numbered images. (Don't forget to upload them to your webserver!) There's no need to stop at 4; use as many as you like, numbered sequentially. You can look at the URLs we tried earlier to see if everything's OK. For example, these URLs
 
 	http://www.example.com/littleprinter-pub/edition/?delivery_count=0
 	http://www.example.com/littleprinter-pub/edition/?delivery_count=1
