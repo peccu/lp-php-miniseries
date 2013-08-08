@@ -1,5 +1,5 @@
 <?php
-// v1.1.2
+// v1.1.3
 
 require 'config.php';
 
@@ -95,6 +95,10 @@ function lp_display_page() {
 		if ( ! in_array($weekday, $DELIVERY_DAYS)) {
 			// This is a day that there's no delivery.
 			http_response_code(204);
+			// It would be nice to output an error message here, so that 
+			// developers trying /edition/ URLs on a non-delivery day see 
+			// what's happening, but a 204 status won't return any content 
+			// anyway.
 			exit;
 		}
 
@@ -109,7 +113,10 @@ function lp_display_page() {
 	if ($file_path_data === FALSE) {
 		// No edition is available for this edition_number. End the subscription.
 		http_response_code(410);
-		exit;
+		lp_fatal_error(
+			"There is no edition number '" . $edition_number . "'.",
+			"If BERG Cloud made this request, the subscriber would now be unsubscribed from the publication."	
+		);
 	
 	} else {
 		// We have content to display!
@@ -260,7 +267,7 @@ function lp_get_edition_file_path($edition_number) {
  */
 function lp_fatal_error($message, $explanation=FALSE) {
 	?>
-	<p><strong>ERROR: <?php echo $message; ?></strong></p>
+	<p><strong><?php echo $message; ?></strong></p>
 <?php
 	if ($explanation !== FALSE) {
 		?>
