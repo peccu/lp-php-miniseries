@@ -1,6 +1,6 @@
 # PHP Little Printer miniseries example
 
-v1.1.2
+v1.1.3
 
 This is a PHP website to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week.
 
@@ -252,6 +252,20 @@ Subscribers will then see:
 > Delivered on Mondays, Wednesdays and Fridays
 
 Once that's done, upload `config.php` and `meta.json` to your server. Then, on your publication's BERG Cloud Developers "Edit" page, click the "Reload from your server" button in the "Metadata" section.
+
+There are two things to be aware of with delivery days...
+
+First, the days are based on the timezone of the subscribing Little Printers. Which means that people around the world will reach your delivery day(s) before or after you do. Someone who subscribes to your publication in New Zealand, and has it delivered at 1am, will receive a Thursdays-only publication when it's still 2pm on Wednesday in London, or 6am on Wednesday morning in San Francisco.
+
+Second, if you try to access the page for an edition directly, and it's currently a day on which there's no delivery, then you'll see no content. In fact, the page won't visibly refresh at all; whatever page you were already viewing will remain there. The way around this is to convince the publication that it's a different day. Previously we've tried out our editions by using a URL like this:
+
+	http://www.example.com/littleprinter-pub/edition/?delivery_count=0
+
+In reality, BERG Cloud will also send the local time wherever the subscribing Little Printer is located. So the URLs will have an extra bit on the end, and look more like this:
+
+	http://www.example.com/littleprinter-pub/edition/?delivery_count=0&delivery_time=2013-07-22T12%3A00%3A00%2B00%3A00
+
+It's a bit of a mouthful but buried in there is the date, in this case, `2013-07-22`. You can add that extra part to your own URL, and change the year-month-day to be a day of the week on which there should be a delivery. Don't worry if you get it wrong; the worst that will happen is you see no edition when there should be one, or vice versa.
 
 
 ###################################################################################
