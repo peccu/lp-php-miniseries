@@ -80,6 +80,9 @@ function lp_display_page() {
 		$local_delivery_time = gmdate('Y-m-d\TH:i:s.0+00:00');
 	}
 
+	// Should be OK for most likely publishers at the moment.
+	header("Content-Type: text/html; charset=utf-8");
+
 	// Will be either 'edition' or 'sample'.
 	$directory_name = basename(getcwd());
 
