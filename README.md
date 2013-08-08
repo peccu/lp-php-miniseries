@@ -265,7 +265,7 @@ In reality, BERG Cloud will also send the local time wherever the subscribing Li
 
 	http://www.example.com/littleprinter-pub/edition/?delivery_count=0&delivery_time=2013-07-22T12%3A00%3A00%2B00%3A00
 
-It's a bit of a mouthful but buried in there is the date, in this case, `2013-07-22`. You can add that extra part to your own URL, and change the year-month-day to be a day of the week on which there should be a delivery. Don't worry if you get it wrong; the worst that will happen is you see no edition when there should be one, or vice versa.
+It's a bit of a mouthful but buried in there is the date, in this case, `2013-07-22`. You can add that extra part to your own URL, and change the year-month-day to be a day of the week on which there should be a delivery. Don't worry if you get it wrong; the worst that will happen is you (personally, right now) see no edition when there should be one, or vice versa.
 
 
 ###################################################################################
