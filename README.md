@@ -1,6 +1,6 @@
 # PHP Little Printer miniseries example
 
-v1.1.3
+v1.1.4
 
 This is a PHP website to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week.
 
@@ -11,6 +11,8 @@ In addition to this code you will need:
 * Some content for your publication: a series of small black-and-white images and/or some text in small daily chunks.
 
 A Little Printer isn't required, although access to one is useful to check that output looks how you want it.
+
+To keep up-to-date with changes to this code, follow [@lpdevelopers](https://twitter.com/lpdevelopers) on Twitter.
 
 We'll first look at the basic configuration and setup, and then at how to create a publication that shows an image every day. Then we'll look at variations on this basic publication, such as only delivering on certain days or creating publications containing HTML text. Finally we'll look at how to take things even further if you're comfortable with writing some PHP.
 
