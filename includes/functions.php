@@ -198,7 +198,7 @@ function lp_day_of_week($time_string) {
  * @param string $time eg, "2013-07-31T19:20:30.45+01:00".
  */
 function lp_etag_header($id, $time) {
-	header('ETag: ' . md5($id . date('dmY', lp_local_time($time))));
+	header('ETag: ' . md5($id . date('dmY', strtotime(lp_local_time($time)))));
 }
 
 
