@@ -1,5 +1,5 @@
 <?php
-// v1.2.0
+$VERSION = 'v1.2.0';
 
 require 'config.php';
 
@@ -64,7 +64,7 @@ function lp_page_footer() {
  * We use this to determine if it's the correct day for a delivery.
  */
 function lp_display_page() {
-	global $PUBLICATION_TYPE, $DELIVERY_DAYS, $EDITION_FOR_SAMPLE;
+	global $PUBLICATION_TYPE, $DELIVERY_DAYS, $EDITION_FOR_SAMPLE, $VERSION;
 
 	// Check everything's OK.
 	lp_pre_flight_check();
@@ -82,6 +82,9 @@ function lp_display_page() {
 
 	// Should be OK for most likely publishers at the moment.
 	header("Content-Type: text/html; charset=utf-8");
+
+	// So we can tell if a problem publication is created by this code.
+	header("LP-PHP-Miniseries: $VERSION");
 
 	// Will be either 'edition' or 'sample'.
 	$directory_name = basename(getcwd());
