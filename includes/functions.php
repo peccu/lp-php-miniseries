@@ -64,10 +64,10 @@ function lp_page_footer() {
  * We use this to determine if it's the correct day for a delivery.
  */
 function lp_display_page() {
-	global $DELIVERY_DAYS, $EDITION_FOR_SAMPLE;
+	global $PUBLICATION_TYPE, $DELIVERY_DAYS, $EDITION_FOR_SAMPLE;
 
 	// Check everything's OK.
-	lp_check_parameters();
+	lp_pre_flight_check();
 
 	// We ignore timezones, but have to set a timezone or PHP will complain.
 	date_default_timezone_set('UTC');
@@ -111,7 +111,7 @@ function lp_display_page() {
 	}
 
 	// Get the path of the image or file for this edition (if any).
-	$file_path_data = lp_get_edition_file_path($edition_number);
+	$file_path_data = lp_get_edition_file_path($edition_number, $local_delivery_time);
 
 	if ($file_path_data === FALSE) {
 		// No edition is available for this edition_number. End the subscription.
@@ -144,6 +144,81 @@ function lp_display_page() {
 /**
  * Some basic checking to make sure everything's roughly OK before going 
  * any further.
+ * Script execution will end here with an error if anything's not OK.
+ */
+function lp_pre_flight_check() {
+	lp_check_config();
+	lp_check_parameters();
+}
+
+
+/**
+ * Check config globals.
+ * Script execution will end here with an error if anything's not OK.
+ */
+function lp_check_config() {
+	global $PUBLICATION_TYPE, $EDITION_FOR_SAMPLE, $DELIVERY_DAYS;
+
+	// PUBLICATION_TYPE.
+
+	if ( ! isset($PUBLICATION_TYPE)) {
+		// This wasn't in <= v1.1.5 so set a default. 
+		$PUBLICATION_TYPE = 'numbered';	
+	} else if ( ! in_array($PUBLICATION_TYPE, array('numbered', 'dated'))) {
+		lp_fatal_error('$PUBLICATION_TYPE should be either "numbered" or "dated", but it is currently "' . $PUBLICATION_TYPE . "'.");
+	}
+
+	// EDITION_FOR_SAMPLE.
+
+	if ( ! isset($EDITION_FOR_SAMPLE)) {
+		if ($PUBLICATION_TYPE == 'numbered') {
+			lp_fatal_error('Please set $EDITION_FOR_SAMPLE to an integer value, eg 1.');
+		} else {
+			lp_fatal_error('Please set $EDITION_FOR_SAMPLE to a date in YYYY-MM-DD format, that matches an edition image or file.');
+		}
+	} else {
+		// We have an EDITION_FOR_SAMPLE, but make sure it's a valid format.
+		if ($PUBLICATION_TYPE == 'numbered') {
+			if ( ! is_int($EDITION_FOR_SAMPLE)) {
+				lp_fatal_error('$EDITION_FOR_SAMPLE should be an integer, but is currently "' . $EDITION_FOR_SAMPLE . '".');
+			}	
+		} else {
+			preg_match('/^(\d\d\d\d)-(\d\d)-(\d\d)$/', $EDITION_FOR_SAMPLE, $matches);
+			if (count($matches) !== 4) {
+				lp_fatal_error('$EDITION_FOR_SAMPLE should be a date in YYYY-MM-DD format, but is currently "' . $EDITION_FOR_SAMPLE . '".');			
+			} else {
+				$year = intval($matches[1]);
+				$month = intval($matches[2]);
+				$day = intval($matches[3]);
+				if ( ! checkdate($month, $day, $year)) {
+					lp_fatal_error('$EDITION_FOR_SAMPLE should be a valid date, but is currently "' . $EDITION_FOR_SAMPLE . '".');			
+				}
+			}
+		}
+	}
+
+	// DELIVERY_DAYS
+
+	if ($PUBLICATION_TYPE == 'numbered') {
+		if ( ! isset($DELIVERY_DAYS)) {
+			lp_fatal_error('$DELIVERY_DAYS is not set. Please see the README for an explanation.');
+		} else if ( ! is_array($DELIVERY_DAYS)) {
+			lp_fatal_error('$DELIVERY_DAYS should be an array. Please see the README for an explanation.');
+		} else {
+			$valid_days = array('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
+			foreach($DELIVERY_DAYS as $day) {
+				if ( ! in_array($day, $valid_days)) {
+					lp_fatal_error('$DELIVERY_DAYS contains "' . $day . '" which is not a valid day.',
+					'Valid days are: "' . implode('", "', $valid_days) . '".');
+				}
+			}	
+		}
+	}
+}
+
+
+/**
+ * Checks directories etc are valid.
  * Script execution will end here with an error if anything's not OK.
  */
 function lp_check_parameters() {
@@ -224,13 +299,28 @@ function lp_directory_path() {
  * Generate the path to the edition file we want to display.
  *
  * @param int $edition_number The 1-based number of the edition we're displaying.
+ * @param string $local_delivery_time eg, "2013-07-31T19:20:30.45+01:00".
  * @returns mixed FALSE if there's no file for this $edition_number, or a hash.
  *		The hash will have a `type` element of either `image' or 'file'.
  *		`image` hashes will have a `url` element.
  *		`file` hashes will have a `file` element.
  */
-function lp_get_edition_file_path($edition_number) {
-	if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
+function lp_get_edition_file_path($edition_number, $local_delivery_time) {
+	$date = date('Y-m-d', strtotime(lp_local_time($local_delivery_time)));
+
+	if (file_exists(lp_directory_path()."editions/$date.png")) {
+		return array(
+			'type' => 'image',
+			'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$ymd.png"
+		);
+
+	} else if (file_exists(lp_directory_path()."editions/$date.html")) {
+		return array(
+			'type' => 'file',
+			'file' => lp_directory_path()."editions/$ymd.html"
+		);
+
+	} else if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
 		return array(
 			'type' => 'image',
 			'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$edition_number.png"

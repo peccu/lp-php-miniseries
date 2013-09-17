@@ -1,6 +1,12 @@
 <?php
 
 /**
+ * Can be either 'numbered' or 'dated'.
+ */
+$PUBLICATION_TYPE = 'numbered';
+
+
+/**
  * The number of the image or html file to use for the sample.
  * Starts at 1.
  */
