@@ -1,5 +1,5 @@
 <?php
-// v1.1.5
+// v1.2.0
 
 require 'config.php';
 
@@ -92,18 +92,22 @@ function lp_display_page() {
 		$edition_number = (int) $_GET['delivery_count'] + 1;
 		lp_etag_header($edition_number, $local_delivery_time);
 
-		// Which weekday is this Little Printer on?
-		$weekday = lp_day_of_week($local_delivery_time);
+		if ($PUBLICATION_TYPE == 'numbered') {
+			// Which weekday is this Little Printer on?
+			$weekday = lp_day_of_week($local_delivery_time);
 
-		if ( ! in_array($weekday, $DELIVERY_DAYS)) {
-			// This is a day that there's no delivery.
-			http_response_code(204);
-			// It would be nice to output an error message here, so that 
-			// developers trying /edition/ URLs on a non-delivery day see 
-			// what's happening, but a 204 status won't return any content 
-			// anyway.
-			exit;
+			if ( ! in_array($weekday, $DELIVERY_DAYS)) {
+				// This is a day that there's no delivery.
+				http_response_code(204);
+				// It would be nice to output an error message here, so that 
+				// developers trying /edition/ URLs on a non-delivery day see 
+				// what's happening, but a 204 status won't return any content 
+				// anyway.
+				exit;
+			}
 		}
+		// 'dated' publications can appear on any day of the week,
+		// assuming there's a file available for today.
 
 	} else { // 'sample'
 		$edition_number = $EDITION_FOR_SAMPLE;
@@ -113,13 +117,26 @@ function lp_display_page() {
 	// Get the path of the image or file for this edition (if any).
 	$file_path_data = lp_get_edition_file_path($edition_number, $local_delivery_time);
 
-	if ($file_path_data === FALSE) {
-		// No edition is available for this edition_number. End the subscription.
+	if ($file_path_data === 410) {
+		// No edition is available for this edition_number, or the 'dated' 
+		// publication has ended.
+		// End the subscription.
 		http_response_code(410);
+		if ($PUBLICATION_TYPE == 'numbered') {
+			$message = "There is no edition number '" . $edition_number . "'.";
+		} else {
+			$message = "This publication has ended.";
+		}
 		lp_fatal_error(
-			"There is no edition number '" . $edition_number . "'.",
+			$message,
 			"If BERG Cloud made this request, the subscriber would now be unsubscribed from the publication."	
 		);
+
+	} else if ($file_path_data === 204) {
+		// No dated edition available for today.
+		// Return nothing.
+		http_response_code(204);
+		exit;
 	
 	} else {
 		// We have content to display!
@@ -300,54 +317,67 @@ function lp_directory_path() {
  *
  * @param int $edition_number The 1-based number of the edition we're displaying.
  * @param string $local_delivery_time eg, "2013-07-31T19:20:30.45+01:00".
- * @returns mixed FALSE if there's no file for this $edition_number, or a hash.
+ * @returns mixed Either a number (204 or 410) if there's no file for this edition/date, or a hash.
  *		The hash will have a `type` element of either `image' or 'file'.
  *		`image` hashes will have a `url` element.
  *		`file` hashes will have a `file` element.
  */
 function lp_get_edition_file_path($edition_number, $local_delivery_time) {
-	$date = date('Y-m-d', strtotime(lp_local_time($local_delivery_time)));
+	global $PUBLICATION_TYPE;
 
-	if (file_exists(lp_directory_path()."editions/$date.png")) {
-		return array(
-			'type' => 'image',
-			'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$ymd.png"
-		);
+	if ($PUBLICATION_TYPE == 'numbered') {
+		if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
+			return array(
+				'type' => 'image',
+				'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$edition_number.png"
+			);
 
-	} else if (file_exists(lp_directory_path()."editions/$date.html")) {
-		return array(
-			'type' => 'file',
-			'file' => lp_directory_path()."editions/$ymd.html"
-		);
+		} else if (file_exists(lp_directory_path()."editions/$edition_number.html")) {
+			return array(
+				'type' => 'file',
+				'file' => lp_directory_path()."editions/$edition_number.html"
+			);
 
-	} else if (file_exists(lp_directory_path()."editions/$edition_number.png")) {
-		return array(
-			'type' => 'image',
-			'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$edition_number.png"
-		);
+		# We'll be nice and make it work for PHP files too:
+		} else if (file_exists(lp_directory_path()."editions/$edition_number.php")) {
+			return array(
+				'type' => 'file',
+				'file' => lp_directory_path()."editions/$edition_number.php"
+			);
 
-	} else if (file_exists(lp_directory_path()."editions/$edition_number.html")) {
-		return array(
-			'type' => 'file',
-			'file' => lp_directory_path()."editions/$edition_number.html"
-		);
+		# If there's a dynamic file to handle all days, use that
+		} else if (file_exists(lp_directory_path()."editions/all.php")) {
+			return array(
+				'type' => 'file',
+				'file' => lp_directory_path()."editions/all.php"
+			);
 
-	# We'll be nice and make it work for PHP files too:
-	} else if (file_exists(lp_directory_path()."editions/$edition_number.php")) {
-		return array(
-			'type' => 'file',
-			'file' => lp_directory_path()."editions/$edition_number.php"
-		);
-
-	# If there's a dynamic file to handle all days, use that
-	} else if (file_exists(lp_directory_path()."editions/all.php")) {
-		return array(
-			'type' => 'file',
-			'file' => lp_directory_path()."editions/all.php"
-		);
+		} else {
+			return 410;
+		}
 
 	} else {
-		return FALSE;
+		// 'dated' publications.
+
+		$date = date('Y-m-d', strtotime(lp_local_time($local_delivery_time)));
+
+		if (file_exists(lp_directory_path()."editions/end.html")) {
+			return 410;
+
+		} else if (file_exists(lp_directory_path()."editions/$date.png")) {
+			return array(
+				'type' => 'image',
+				'url' => "http://".$_SERVER['SERVER_NAME'].lp_directory_url()."editions/$date.png"
+			);
+
+		} else if (file_exists(lp_directory_path()."editions/$date.html")) {
+			return array(
+				'type' => 'file',
+				'file' => lp_directory_path()."editions/$date.html"
+			);
+		} else {
+			return 204;
+		}
 	}
 }
 

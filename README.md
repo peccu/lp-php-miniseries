@@ -1,8 +1,8 @@
 # PHP Little Printer miniseries example
 
-v1.1.5
+v1.2.0
 
-This is a PHP website to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week.
+This is a PHP website to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week, or specific content to all subscribers on certain dates.
 
 In addition to this code you will need:
 
@@ -13,6 +13,8 @@ In addition to this code you will need:
 A Little Printer isn't required, although access to one is useful to check that output looks how you want it.
 
 To keep up-to-date with changes to this code, follow [@lpdevelopers](https://twitter.com/lpdevelopers) on Twitter.
+
+Release notes for this and past versions are on the [GitHub Releases page](https://github.com/bergcloud/lp-php-miniseries/releases).
 
 We'll first look at the basic configuration and setup, and then at how to create a publication that shows an image every day. Then we'll look at variations on this basic publication, such as only delivering on certain days or creating publications containing HTML text. Finally we'll look at how to take things even further if you're comfortable with writing some PHP.
 
@@ -271,13 +273,82 @@ It's a bit of a mouthful but buried in there is the date, in this case, `2013-07
 
 
 ###################################################################################
-## Creating infinite publications #################################################
+## Dated editions #################################################################
+
+So far our publication has the same beginning and set of editions for every subscriber. No matter when someone subscribes, their Little Printer will first print out edition 1, followed by edition 2, etc.
+
+An alternative would be to have editions that are specific to particular dates, and all subscribers receive the same content on the same date. New subscribers will never see any earlier editions but will receive subsequent editions on the same days as existing subscribers. Editions don't need to come out every day -- you choose how frequently, and on which days, they appear.
+
+To make a publication work like this we need to do a couple of things differently.
+
+First, open the `littleprinter-pub/includes/config.php` file and change this line:
+
+	$PUBLICATION_TYPE = 'numbered';
+
+to this:
+
+	$PUBLICATION_TYPE = 'dated';
+
+Don't forget to upload `config.php` to your server.
+
+This change ensures we deliver the correct files as our editions. Previously all our files in `/editions/` were numbered sequentially. Any files named like this will now be ignored, and instead the code will look for files named with dates in "YYYY-MM-DD" format:
+
+	littleprinter-pub/editions/2013-09-17.html
+	littleprinter-pub/editions/2013-09-18.png
+	littleprinter-pub/editions/2013-09-30.png
+	littleprinter-pub/editions/2013-11-12.php
+
+As before, you can mix HTML, PNG and PHP files, or only use one kind.
+
+A file will be delivered to all current subscribers on the date specified. The files do not need to be dated sequentially; you can leave gaps between them and nothing will be delivered on those "missing" days. Note that most subscribers will probably be in a timezone different to your own, so be sure to prepare content in time for the first people in the world to reach your chosen date.
+
+Before this works, you will also need to change this line in `littleprinter-pub/includes/config.php`:
+
+	$EDITION_FOR_SAMPLE = 1;
+
+Change it so that it has the same date as one of your new files. It should look something like this (note the quotes around the date):
+
+	$EDITION_FOR_SAMPLE = "2013-09-30";
+
+You can check this is working (once you've uploaded it to your server again) by visiting the `/sample/` folder with your web browser. For our example, it's at this URL:
+
+	http://www.example.com/littleprinter-pub/sample/
+
+You can check your editions by using a URL with the correct `local_delivery_time` in the URL. For example, to view the first edition from our directory listing above, we'd use a URL like this:
+
+	http://www.example.com/littleprinter-pub/edition/?delivery_count=1&local_delivery_time=2013-09-17T00:00:00.0+00:00
+
+It's a bit of a mouthful, but you can see the date, `2013-09-17` in there, which matches the `2013-09-17.html` file we have in our `/editions/` directory.
+
+While you're in the `config.php` file, we should point out that the `$DELIVERY_DAYS` setting is ignored for publications of this type. The editions are delivered on any day on which you have dated files available.
+
+You might also want to edit the description of your delivery schedule in the `littleprinter-pub/meta.json` file. This is discussed above in more detail, but you should change the line that's like this:
+
+	"delivered_on": "every day",
+
+so that it makes more sense for your new customised schedule. Maybe something like "every other Thursday", "once or twice a week", or "on days that Ipswich Town F.C. are playing". And then, of course, upload the file to your server.
+
+Finally... what do you do when you've ended a dated publication, or just had enough? With a conventionally-numbered publication subscribers are automatically unsubscribed when there are no more edition files remaining. But with a dated publication there's no automatic way to know when, or if, it's finished.
+
+If you decide the publication is over, and all subscribers should be automatically unsubscribed, then add a text file named `end.html` to your `/editions/` directory, like this:
+
+	littleprinter-pub/editions/2013-09-17.html
+	littleprinter-pub/editions/2013-09-18.png
+	littleprinter-pub/editions/2013-09-30.png
+	littleprinter-pub/editions/2013-11-12.php
+	littleprinter-pub/editions/end.html
+
+The file doesn't need to have anything in it; it's empty. If this file is present, all subscribers will be unsubscribed. So be careful! You don't have to use this feature, but it's there if you need it.
+
+
+###################################################################################
+## Creating infinite, numbered, publications ######################################
 
 We can already create a wide variety of publications without writing any code. But if you're comfortable with writing a little PHP, then it's possible to take things further.
 
-As a first step, we can make a publication that lasts indefinitely, but without having to create an infinite amount of images or files in the `/editions/` folder.
+As a first step, we can make a numbered publication that lasts indefinitely, but without having to create an infinite amount of images or files in the `/editions/` folder.
 
-If there is no file available for a particular edition number then the code checks for the presence of an `/editions/all.php` file. If this exists, that file is used for every other edition. For example, if we have these edition files
+If the `$PUBLICATION_TYPE` setting in `config.php` is set to `numbered`, but there is no file available for a particular edition number, then the code checks for the presence of an `/editions/all.php` file. If this exists, that file is used for every other edition. For example, if we have these edition files
 
 	littleprinter-pub/editions/1.html
 	littleprinter-pub/editions/2.png
@@ -325,7 +396,7 @@ If you want your publication to end at some point, rather than to go on forever,
 		http_response_code(410);
 		exit;
 
-Be careful not to ouptput any HTML, including blank lines, before doing this.Subscribers will then be automatically unsubscribed, having reached the end of your publication.
+Be careful not to ouptput any HTML, including blank lines, before doing this. Subscribers will then be automatically unsubscribed, having reached the end of your publication.
 
 
 ###################################################################################
