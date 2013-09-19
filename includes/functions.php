@@ -112,13 +112,22 @@ function lp_display_page() {
 		// 'dated' publications can appear on any day of the week,
 		// assuming there's a file available for today.
 
-	} else { // 'sample'
-		$edition_number = $EDITION_FOR_SAMPLE;
-		lp_etag_header('sample', $local_delivery_time);
-	}
+		$file_path_data = lp_get_edition_file_path(
+										$edition_number, $local_delivery_time);
 
-	// Get the path of the image or file for this edition (if any).
-	$file_path_data = lp_get_edition_file_path($edition_number, $local_delivery_time);
+	} else { // 'sample'
+		lp_etag_header('sample', $local_delivery_time);
+
+		if ($PUBLICATION_TYPE == 'numbered') {
+			// Get path for the sample edition..
+			$file_path_data = lp_get_edition_file_path(
+									$EDITION_FOR_SAMPLE, $local_delivery_time);
+		} else {
+			// Make a fake local_delivery_time based on sample's date.
+			$file_path_data = lp_get_edition_file_path(
+									1, $EDITION_FOR_SAMPLE . 'T00:00:00.0+00');
+		}
+	}
 
 	if ($file_path_data === 410) {
 		// No edition is available for this edition_number, or the 'dated' 
