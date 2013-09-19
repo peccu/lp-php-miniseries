@@ -1,5 +1,5 @@
 <?php
-$VERSION = 'v1.2.0';
+$VERSION = 'v1.2.1';
 
 require 'config.php';
 
