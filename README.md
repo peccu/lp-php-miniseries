@@ -31,8 +31,8 @@ Download the publication's code from https://github.com/bergcloud/lp-php-miniser
 
 You'll need to edit one file in this folder: `meta.json`. This is the file that tells BERG Cloud information about your publication. Open it in a text editor, eg TextEdit on a Mac or Notepad on Windows. For the moment you'll only need to change two lines:
 
-    "name": "YOUR PUBLICATION TITLE HERE",
-    "description": "YOUR DESCRIPTION HERE",
+    "name": "Your Publication Title Here",
+    "description": "Your Description Here",
 
 Replace those capitalised words with the title and description of your publication. You can change them again later if needs be. Be sure to keep the "quote" marks and commas in place. Save the file.
 
