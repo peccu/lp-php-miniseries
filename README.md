@@ -1,6 +1,6 @@
 # PHP Little Printer miniseries example
 
-v1.2.1
+v1.2.2
 
 This is a PHP website to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week, or specific content to all subscribers on certain dates.
 
