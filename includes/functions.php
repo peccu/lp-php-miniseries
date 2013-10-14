@@ -60,7 +60,7 @@ function lp_page_footer() {
  *
  * `local_delivery_time`
  * This will contain the time in the timezone where the Little Printer we're
- * delivering to is based, eg "2013-07-31T19:20:30.45+01:00".
+ * delivering to is based, eg "2013-07-31T19:20:30+01:00".
  * We use this to determine if it's the correct day for a delivery.
  */
 function lp_display_page() {
@@ -275,8 +275,8 @@ function lp_check_parameters() {
 
 /**
  * Gets rid of the timezone part of a date string.
- * @param string $time eg, "2013-07-31T19:20:30.45+01:00".
- * @return string eg "2013-07-31T19:20:30.45".
+ * @param string $time eg, "2013-07-31T19:20:30+01:00".
+ * @return string eg "2013-07-31T19:20:30".
  */
 function lp_local_time($time) {
 	return substr($time, 0, -6);
@@ -285,7 +285,7 @@ function lp_local_time($time) {
 
 /**
  * Get the day of the week from a time_string.
- * @param string $time_string eg, "2013-07-31T19:20:30.45+01:00".
+ * @param string $time_string eg, "2013-07-31T19:20:30+01:00".
  * @return string Lowercased weekday name. eg 'monday'.
  */
 function lp_day_of_week($time_string) {
@@ -299,7 +299,7 @@ function lp_day_of_week($time_string) {
 /**
  * Send an ETag header, based on a string and a time.
  * @param mixed $id Probably either an edition number (eg, 1) or 'sample'.
- * @param string $time eg, "2013-07-31T19:20:30.45+01:00".
+ * @param string $time eg, "2013-07-31T19:20:30+01:00".
  */
 function lp_etag_header($id, $time) {
 	header('ETag: "' . md5($id . date('dmY', strtotime(lp_local_time($time)))) . '"');
@@ -328,7 +328,7 @@ function lp_directory_path() {
  * Generate the path to the edition file we want to display.
  *
  * @param int $edition_number The 1-based number of the edition we're displaying.
- * @param string $local_delivery_time eg, "2013-07-31T19:20:30.45+01:00".
+ * @param string $local_delivery_time eg, "2013-07-31T19:20:30+01:00".
  * @returns mixed Either a number (204 or 410) if there's no file for this edition/date, or a hash.
  *		The hash will have a `type` element of either `image' or 'file'.
  *		`image` hashes will have a `url` element.

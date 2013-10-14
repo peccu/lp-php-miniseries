@@ -316,7 +316,7 @@ You can check this is working (once you've uploaded it to your server again) by 
 
 You can check your editions by using a URL with the correct `local_delivery_time` in the URL. For example, to view the first edition from our directory listing above, we'd use a URL like this:
 
-	http://www.example.com/littleprinter-pub/edition/?delivery_count=1&local_delivery_time=2013-09-17T00:00:00.0+00:00
+	http://www.example.com/littleprinter-pub/edition/?delivery_count=1&local_delivery_time=2013-09-17T00:00:00+00:00
 
 It's a bit of a mouthful, but you can see the date, `2013-09-17` in there, which matches the `2013-09-17.html` file we have in our `/editions/` directory.
 
@@ -366,7 +366,7 @@ Within `all.php` you can do whatever you like to output content for each edition
 You have access to two important variables:
 
 * `$edition_number` will be an integer, counting up from 1 for each edition.
-* `$local_delivery_time` will be a string representing the current time at the requesting Little Printer, for example `2013-07-31T19:20:30.45-07:00`.
+* `$local_delivery_time` will be a string representing the current time at the requesting Little Printer, for example `2013-07-31T19:20:30-07:00`.
 
 (Alternatively, you could access `$_GET['delivery_count']` (which is zero-based) and `$_GET['local_delivery_time']` directly if you prefer.)
 
