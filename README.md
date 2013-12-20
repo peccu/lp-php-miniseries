@@ -1,12 +1,12 @@
-# PHP Little Printer miniseries example
+# PHP Little Printer miniseries template
 
-v1.2.2
+v1.2.3
 
 This is a PHP website to make it easy to create a [Little Printer](http://bergcloud.com/littleprinter/) miniseries publication: one that delivers your content to subscribers on a regular basis. For example, an image every day for 30 days, or a short story twice a week, or specific content to all subscribers on certain dates.
 
 In addition to this code you will need:
 
-* A webserver that you can upload PHP files to (most shared hosting accounts will be fine).
+* A webserver that you can upload PHP files to (most shared hosting accounts will be fine). It needs to run PHP v5.1 or greater (see "Setup" below).
 * An account on the [BERG Cloud Remote](http://remote.bergcloud.com/) website.
 * Some content for your publication: a series of small black-and-white images and/or some text in small daily chunks.
 
@@ -21,6 +21,12 @@ We'll first look at the basic configuration and setup, and then at how to create
 
 ###################################################################################
 ## Setup ##########################################################################
+
+If you don't know which version of PHP your webserver is using, then create a new text file called something like `test.php`. In that put this:
+
+    <?php phpinfo(); ?>
+
+Upload that file to your webserver and then view it in a browser. You should see which version of PHP is running. You'll need at least version 5.1.
 
 Before adding your own content to the publication we'll set it up using the dummy content provided.
 
